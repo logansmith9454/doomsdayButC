@@ -9,8 +9,10 @@
 
 int main()
 {
-	Quiz quiz;
-	quiz.generateQuiz();
+	Quiz q;
+	q.generateQuiz();
+
+
 }
 
 class Quiz {
@@ -25,6 +27,11 @@ public:
 	int leapValue;
 	int centValue;
 	int dayOfWeek;
+	std::string userInput;
+	int userGuess;
+	bool validInput;
+	std::string userRepeat;
+	bool repeat;
 	std::random_device rd;
 	std::mt19937 gen{ rd() };
 	std::uniform_int_distribution<> dayGen28{ 1, 28 };
@@ -44,6 +51,10 @@ public:
 	{1, 4}, {2, 0}, {3, 3}, {4, 6}, {5, 1},
 	{6, 4}, {7, 6}, {8, 2}, {9, 5}, {10, 0},
 	{11, 3}, {12, 5}
+	};
+	std::map<int, std::string> dayOfWeekMap = {
+	{0, "Sunday"}, {1, "Monday"}, {2, "Tuesday"}, {3, "Wednesday"},
+	{4, "Thursday"}, {5, "Friday"}, {6, "Saturday"}
 	};
 
 	int getRandomYear() {
@@ -119,7 +130,7 @@ public:
 		return (centValue + yearValue + monthValue + day - leapValue) % 7;
 	}
 
-	void generateQuiz() {
+	bool generateQuiz() {
 		wholeYear = getRandomYear();
 		month = getRandomMonth();
 		monthValue = getMonthValue(month);
@@ -131,9 +142,46 @@ public:
 		leapValue = getLeapValue(wholeYear);
 		dayOfWeek = getDayOfWeek(centValue, yearValue, monthValue, day, leapValue);
 
-		std::cout << month << "/" << day << "/" << year << std::endl;
-
-
+		validInput = false;
+		while (validInput == false) {
+			std::cout << month << "/" << day << "/" << year << std::endl;
+			std::cin >> userInput;
+			try {
+				userGuess = std::stoi(userInput);
+			}
+			catch (...) {
+				std::cout << "Invalid input. Please enter an integer." << std::endl;
+			}
+			if (userGuess < 0 || userGuess > 6) {
+				std::cout << "Invalid input. Please enter a number between 0 and 6" << std::endl;
+			}
+			else {
+				validInput = true;
+			}
+			if (dayOfWeek == userGuess) {
+				std::cout << "Correct!" << std::endl;
+			}
+			else {
+				std::cout << "Incorrect. The right answer was " << dayOfWeekMap[dayOfWeek] << "." << std::endl;
+			}
+			validInput = false;
+			while (validInput == false) {
+				std::cout << "Try another? (y/n)\n>" << std::endl;
+				std::cin >> userRepeat;
+				if (userRepeat == "y") {
+					repeat = true;
+					validInput = true;
+				}
+				else if (userRepeat == "n") {
+					repeat = false;
+					validInput = true;
+				}
+				else {
+					std::cout << "Invalid input. Please enter either 'y' or 'n'." << std::endl;
+				}
+			}
+			return repeat;
+		}
 	}
 };
 
