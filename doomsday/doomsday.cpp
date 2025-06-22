@@ -5,24 +5,17 @@
 #include <map>
 #include <string>
 #include <random>
+#include <cstdlib>
 
-
-int main()
-{
-	Quiz q;
-	q.generateQuiz();
-
-
-}
 
 class Quiz {
 public:
 	int wholeYear;
-    int year;
-    int month;
+	int year;
+	int month;
 	int day;
-    int cent;
-    int monthValue;
+	int cent;
+	int monthValue;
 	int yearValue;
 	int leapValue;
 	int centValue;
@@ -32,8 +25,7 @@ public:
 	bool validInput;
 	std::string userRepeat;
 	bool repeat;
-	std::random_device rd;
-	std::mt19937 gen{ rd() };
+	std::mt19937 randomGen;
 	std::uniform_int_distribution<> dayGen28{ 1, 28 };
 	std::uniform_int_distribution<> dayGen29{ 1, 29 };
 	std::uniform_int_distribution<> dayGen30{ 1, 30 };
@@ -57,29 +49,33 @@ public:
 	{4, "Thursday"}, {5, "Friday"}, {6, "Saturday"}
 	};
 
+	// Initialize a new random number generator for each question to ensure randomness
+	Quiz() : randomGen(std::random_device()()) {
+	}
+
 	int getRandomYear() {
-		return yearGen(gen);
+		return yearGen(randomGen);
 	}
 
 	int getRandomMonth() {
-		return monthGen(gen);
+		return monthGen(randomGen);
 	}
 
 	int getRandomDay(int month) {
 		if (month == 2) {
 			if (leapValue == 1) {
 				// Make sure to do 29 days in Feb if leap year
-				return dayGen29(gen);
+				return dayGen29(randomGen);
 			}
 			else {
-				return dayGen28(gen);
+				return dayGen28(randomGen);
 			}
 		}
 		else if (monthDayMap[month] == 30) {
-			return dayGen30(gen);
+			return dayGen30(randomGen);
 		}
 		else {
-			return dayGen31(gen);
+			return dayGen31(randomGen);
 		}
 	
 	}
@@ -130,121 +126,67 @@ public:
 		return (centValue + yearValue + monthValue + day - leapValue) % 7;
 	}
 
-	bool generateQuiz() {
-		wholeYear = getRandomYear();
-		month = getRandomMonth();
-		monthValue = getMonthValue(month);
-		day = getRandomDay(month);
-		cent = getCent(wholeYear);
-		centValue = getCentValue(cent);
-		year = getYear(wholeYear, cent);
-		yearValue = getYearValue(year);
-		leapValue = getLeapValue(wholeYear);
-		dayOfWeek = getDayOfWeek(centValue, yearValue, monthValue, day, leapValue);
+	void generateQuiz() {
+		repeat = true;
+		while (repeat == true) {
+			wholeYear = getRandomYear();
+			month = getRandomMonth();
+			monthValue = getMonthValue(month);
+			day = getRandomDay(month);
+			cent = getCent(wholeYear);
+			centValue = getCentValue(cent);
+			year = getYear(wholeYear, cent);
+			yearValue = getYearValue(year);
+			leapValue = getLeapValue(wholeYear);
+			dayOfWeek = getDayOfWeek(centValue, yearValue, monthValue, day, leapValue);
 
-		validInput = false;
-		while (validInput == false) {
-			std::cout << month << "/" << day << "/" << year << std::endl;
-			std::cin >> userInput;
-			try {
-				userGuess = std::stoi(userInput);
-			}
-			catch (...) {
-				std::cout << "Invalid input. Please enter an integer." << std::endl;
-			}
-			if (userGuess < 0 || userGuess > 6) {
-				std::cout << "Invalid input. Please enter a number between 0 and 6" << std::endl;
-			}
-			else {
-				validInput = true;
-			}
-			if (dayOfWeek == userGuess) {
-				std::cout << "Correct!" << std::endl;
-			}
-			else {
-				std::cout << "Incorrect. The right answer was " << dayOfWeekMap[dayOfWeek] << "." << std::endl;
-			}
 			validInput = false;
 			while (validInput == false) {
-				std::cout << "Try another? (y/n)\n>" << std::endl;
-				std::cin >> userRepeat;
-				if (userRepeat == "y") {
-					repeat = true;
-					validInput = true;
+				std::cout << month << "/" << day << "/" << year << std::endl;
+				std::cin >> userInput;
+				try {
+					userGuess = std::stoi(userInput);
 				}
-				else if (userRepeat == "n") {
-					repeat = false;
-					validInput = true;
+				catch (...) {
+					std::cout << "Invalid input. Please enter an integer." << std::endl;
+				}
+				if (userGuess < 0 || userGuess > 6) {
+					std::cout << "Invalid input. Please enter a number between 0 and 6" << std::endl;
 				}
 				else {
-					std::cout << "Invalid input. Please enter either 'y' or 'n'." << std::endl;
+					validInput = true;
+				}
+				if (dayOfWeek == userGuess) {
+					std::cout << "Correct!" << std::endl;
+				}
+				else {
+					std::cout << "Incorrect. The right answer was " << dayOfWeekMap[dayOfWeek] << " (" << dayOfWeek << ")" << std::endl;
+				}
+				validInput = false;
+				while (validInput == false) {
+					std::cout << "Try another? (y/n)\n>" << std::endl;
+					std::cin >> userRepeat;
+					if (userRepeat == "y") {
+						repeat = true;
+						validInput = true;
+						system("cls"); // Clear the console for the next question
+					}
+					else if (userRepeat == "n") {
+						repeat = false;
+						validInput = true;
+					}
+					else {
+						std::cout << "Invalid input. Please enter either 'y' or 'n'." << std::endl;
+					}
 				}
 			}
-			return repeat;
+		
 		}
 	}
 };
 
-//final random = Random();
-//// Generate a random date
-//_year0 = (random.nextInt(200) + 1900); // Year is between 1900 and 2100
-//_month = random.nextInt(12) + 1; // Month is between 1 and 12
-//switch (_month) {
-//case 1 || 3 || 5 || 7 || 8 || 10 || 12:
-//    _day = random.nextInt(31) + 1;
-//    break;
-//case 2:
-//    _day = random.nextInt(28) + 1;
-//    break;
-//case 4 || 6 || 9 || 11:
-//    _day = random.nextInt(30) + 1;
-//    break;
-//}
-//
-//_year = _year0 % 100;
-//_cent = ((_year0 - _year) / 100).toInt();
-//if ((_year % 4 == 0 && _year != 0) || (_year == 0 && _cent % 4 == 0)) {
-//    _leap = true;
-//}
-//else {
-//    _leap = false;
-//}
-//_yearValue = (((_year - (_year % 4)) / 4) + _year).toInt();
-//
-//switch (_cent % 4) {
-//case 0:
-//    _centValue = 2;
-//case 1:
-//    _centValue = 0;
-//case 2:
-//    _centValue = 5;
-//case 3:
-//    _centValue = 3;
-//}
-//
-//switch (_month) {
-//case 2 || 3 || 11:
-//    _monthValue = 0;
-//case 6:
-//    _monthValue = 1;
-//case 9 || 12:
-//    _monthValue = 2;
-//case 4 || 7:
-//    _monthValue = 3;
-//case 1 || 10:
-//    _monthValue = 4;
-//case 5:
-//    _monthValue = 5;
-//case 8:
-//    _monthValue = 6;
-//}
-//if (_month < 3 && _leap == true) {
-//    _leapValue = 1;
-//}
-//else {
-//    _leapValue = 0;
-//}
-//
-//_correctAnswer =
-//((_centValue + _yearValue + _monthValue + _day - _leapValue) % 7)
-//.toInt();
+int main()
+{
+	Quiz q;
+	q.generateQuiz();
+}
